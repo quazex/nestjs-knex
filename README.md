@@ -53,7 +53,7 @@ import { InjectKnex } from '@quazex/nestjs-knex';
 import { Knex } from 'knex';
 
 @Injectable()
-export class CollectionService {
+export class DatabaseService {
     constructor(@InjectKnex() private readonly knexClient: Knex<object>) {}
 
     async insert(document: object) {
