@@ -17,7 +17,6 @@ export class TestingKnexFactory {
 
     public async init(): Promise<void> {
         const tContainer = new PostgreSqlContainer('postgres:16.1');
-
         this._container = await tContainer.withReuse().start();
 
         const tProvider: FactoryProvider<TestingKnexService> = {

@@ -25,18 +25,18 @@ import { Module } from '@nestjs/common';
 import { KnexModule } from '@quazex/nestjs-knex';
 
 @Module({
-  imports: [
-    KnexModule.forRoot({
-        client: 'pg',
-        connection: {
-            host: 'localhost',
-            port: 5432,
-            user: 'test',
-            password: 'test',
-            database: 'test',
-        },
-    }),
-  ],
+    imports: [
+        KnexModule.forRoot({
+            client: 'pg',
+            connection: {
+                host: 'localhost',
+                port: 5432,
+                user: 'test',
+                password: 'test',
+                database: 'test',
+            },
+        }),
+    ],
 })
 export class AppModule {}
 ```
