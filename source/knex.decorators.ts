@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
-import { KnexUtilities } from './knex.utilities';
+import { KnexTokens } from './knex.tokens';
 
-export const InjectKnex = (name?: string): ReturnType<typeof Inject> => {
-    const token = KnexUtilities.getClientToken(name);
+export const InjectKnex = (): ReturnType<typeof Inject> => {
+    const token = KnexTokens.getClient();
     return Inject(token);
 };

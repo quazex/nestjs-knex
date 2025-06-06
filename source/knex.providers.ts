@@ -1,11 +1,11 @@
 import { FactoryProvider, Provider, ValueProvider } from '@nestjs/common';
 import { knex, Knex } from 'knex';
 import { KnexAsyncOptions, KnexConfigFactory } from './knex.interfaces';
-import { KnexUtilities } from './knex.utilities';
+import { KnexTokens } from './knex.tokens';
 
 export class KnexProviders {
-    public static getOptions({ name, ...options }: Knex.Config & { name?: string }): ValueProvider<Knex.Config> {
-        const optionsToken = KnexUtilities.getOptionsToken(name);
+    public static getOptions(options: Knex.Config): ValueProvider<Knex.Config> {
+        const optionsToken = KnexTokens.getOptions();
         return {
             provide: optionsToken,
             useValue: options,
@@ -13,7 +13,7 @@ export class KnexProviders {
     }
 
     public static getAsyncOptions(options: KnexAsyncOptions): Provider<Knex.Config> {
-        const optionsToken = KnexUtilities.getOptionsToken(options.name);
+        const optionsToken = KnexTokens.getOptions();
         if (options.useFactory) {
             return {
                 provide: optionsToken,
@@ -34,9 +34,9 @@ export class KnexProviders {
         throw new Error('Must provide useFactory or useClass');
     }
 
-    public static getClient(name?: string): FactoryProvider<Knex> {
-        const optionsToken = KnexUtilities.getOptionsToken(name);
-        const clientToken = KnexUtilities.getClientToken(name);
+    public static getClient(): FactoryProvider<Knex> {
+        const optionsToken = KnexTokens.getOptions();
+        const clientToken = KnexTokens.getClient();
         return {
             provide: clientToken,
             useFactory: (config: Knex.Config) => knex(config),

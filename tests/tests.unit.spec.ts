@@ -101,7 +101,6 @@ describe('Knex > Unit', () => {
                 KnexModule.forRootAsync({
                     imports: [ConfigModule],
                     useExisting: KnexConfig,
-                    name: faker.string.alpha({ length: 10 }),
                 }),
             ],
         });

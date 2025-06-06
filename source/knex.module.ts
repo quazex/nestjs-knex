@@ -6,9 +6,9 @@ import { KnexProviders } from './knex.providers';
 @Global()
 @Module({})
 export class KnexModule {
-    public static forRoot({ name, ...options }: Knex.Config & { name?: string }): DynamicModule {
+    public static forRoot(options: Knex.Config): DynamicModule {
         const optionsProvider = KnexProviders.getOptions(options);
-        const clientProvider = KnexProviders.getClient(name);
+        const clientProvider = KnexProviders.getClient();
 
         const dynamicModule: DynamicModule = {
             module: KnexModule,
@@ -26,7 +26,7 @@ export class KnexModule {
 
     public static forRootAsync(asyncOptions: KnexAsyncOptions): DynamicModule {
         const optionsProvider = KnexProviders.getAsyncOptions(asyncOptions);
-        const clientProvider = KnexProviders.getClient(asyncOptions.name);
+        const clientProvider = KnexProviders.getClient();
 
         const dynamicModule: DynamicModule = {
             module: KnexModule,

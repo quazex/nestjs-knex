@@ -3,7 +3,6 @@
 Core features:
 
 - Based on [Knex library for NodeJS](https://github.com/knex/knex);
-- Supports multiple instances;
 - Covered with unit and e2e tests;
 - Basic module without unnecessary boilerplate.
 
@@ -26,19 +25,18 @@ import { Module } from '@nestjs/common';
 import { KnexModule } from '@quazex/nestjs-knex';
 
 @Module({
-  imports: [
-    KnexModule.forRoot({
-        name: 'my-knex', // optional
-        client: 'pg',
-        connection: {
-            host: 'localhost',
-            port: 5432,
-            user: 'test',
-            password: 'test',
-            database: 'test',
-        },
-    }),
-  ],
+    imports: [
+        KnexModule.forRoot({
+            client: 'pg',
+            connection: {
+                host: 'localhost',
+                port: 5432,
+                user: 'test',
+                password: 'test',
+                database: 'test',
+            },
+        }),
+    ],
 })
 export class AppModule {}
 ```
@@ -54,14 +52,14 @@ import { Knex } from 'knex';
 
 @Injectable()
 export class DatabaseService {
-    constructor(@InjectKnex() private readonly knexClient: Knex<object>) {}
+    constructor(@InjectKnex() private readonly client: Knex) {}
 
     async insert(document: object) {
-        await this.knexClient('table').insert(document);
+        await this.client('table').insert(document);
     }
 
     async select(id: string) {
-        return await this.knexClient('table').select('*').where({ id }).first();
+        return await this.client('table').select('*').where({ id }).first();
     }
 }
 ```
@@ -71,19 +69,25 @@ export class DatabaseService {
 If you need dynamic configuration, use `forRootAsync`:
 
 ```typescript
+import { Module } from '@nestjs/common';
+import { KnexModule } from '@quazex/nestjs-knex';
+
 @Module({
     imports: [
         KnexModule.forRootAsync({
-            useFactory: async () => ({
+            useFactory: async(config: SomeConfigProvider) => ({
                 client: 'pg',
                 connection: {
-                    host: process.env.PG_HOST,
-                    port: process.env.PG_PORT,
-                    user: process.env.PG_USER,
-                    password: process.env.PG_PASSWORD,
-                    database: process.env.PG_DATABASE,
+                    host: config.PG_HOST,
+                    port: config.PG_PORT,
+                    user: config.PG_USER,
+                    password: config.PG_PASSWORD,
+                    database: config.PG_DATABASE,
                 },
             }),
+            inject: [
+                SomeConfigProvider,
+            ],
         }),
     ],
 })
@@ -92,21 +96,16 @@ export class AppModule {}
 
 ### Connection and graceful shutdown
 
-By default, this module doesn't manage client connection on application bootstrap or shutdown. You can read more about lifecycle hooks on the NestJS [documentation page](https://docs.nestjs.com/fundamentals/lifecycle-events#application-shutdown). 
+By default, this module doesn't manage client connection on application bootstrap or shutdown. You can read more about lifecycle hooks on the NestJS [documentation page](https://docs.nestjs.com/fundamentals/lifecycle-events#application-shutdown).
 
 ```typescript
 // main.ts
 const app = await NestFactory.create(AppModule);
 
-app.useLogger(logger);
+// Starts listening for shutdown hooks
 app.enableShutdownHooks(); // <<<
 
-app.setGlobalPrefix('api');
-app.enableVersioning({
-    type: VersioningType.URI,
-});
-
-await app.listen(appConfig.port, '0.0.0.0');
+await app.listen(process.env.PORT ?? 3000);
 ```
 
 ```typescript
@@ -117,10 +116,10 @@ import { Knex } from 'knex';
 
 @Injectable()
 export class AppBootstrap implements OnApplicationShutdown {
-    constructor(@InjectKnex() private readonly knexClient: Knex) {}
+    constructor(@InjectKnex() private readonly client: Knex) {}
 
     public async onApplicationShutdown(): Promise<void> {
-        await this.knexClient.close();
+        await this.client.destroy();
     }
 }
 ```

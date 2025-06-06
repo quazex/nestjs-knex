@@ -6,7 +6,6 @@ export interface KnexConfigFactory {
 }
 
 export interface KnexAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-    name?: string;
     inject?: Array<InjectionToken | OptionalFactoryDependency>;
     useExisting?: Type<KnexConfigFactory>;
     useFactory?: (...args: any[]) => Promise<Knex.Config> | Knex.Config;

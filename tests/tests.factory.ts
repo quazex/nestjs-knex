@@ -5,7 +5,7 @@ import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers
 import { Knex } from 'knex';
 import { QueryResult } from 'pg';
 import { KnexModule } from '../source/knex.module';
-import { KnexUtilities } from '../source/knex.utilities';
+import { KnexTokens } from '../source/knex.tokens';
 import { TestingDocument, TestingKnexService } from './tests.types';
 
 export class TestingKnexFactory {
@@ -17,17 +17,16 @@ export class TestingKnexFactory {
 
     public async init(): Promise<void> {
         const tContainer = new PostgreSqlContainer('postgres:16.1');
-
         this._container = await tContainer.withReuse().start();
 
         const tProvider: FactoryProvider<TestingKnexService> = {
             provide: this._token,
             useFactory: (client: Knex<TestingDocument>) => ({
+                onApplicationBootstrap: async(): Promise<void> => {
+                    await client.raw(`CREATE TABLE ${this._table} (id UUID PRIMARY KEY, visits INT, list INT[], updated TIMESTAMP)`);
+                },
                 onApplicationShutdown: async(): Promise<void> => {
                     await client.destroy();
-                },
-                exec: async(command): Promise<void> => {
-                    await client.raw(command);
                 },
                 write: async(document): Promise<number[]> => {
                     const result = await client(this._table).insert(document);
@@ -48,7 +47,7 @@ export class TestingKnexFactory {
                 },
             }),
             inject: [
-                KnexUtilities.getClientToken(),
+                KnexTokens.getClient(),
             ],
         };
 
@@ -71,10 +70,9 @@ export class TestingKnexFactory {
         });
 
         this._testing = await tModule.compile();
-        this._testing.enableShutdownHooks();
+        this._testing = await this._testing.init();
 
-        const service = this.getService();
-        await service.exec(`CREATE TABLE ${this._table} (id UUID PRIMARY KEY, visits INT, list INT[], updated TIMESTAMP)`);
+        this._testing.enableShutdownHooks();
     }
 
     public async close(): Promise<void> {
@@ -82,7 +80,7 @@ export class TestingKnexFactory {
         await this._container.stop();
     }
 
-    public getService(): TestingKnexService {
+    public get service(): TestingKnexService {
         return this._testing.get<TestingKnexService>(this._token);
     }
 }
