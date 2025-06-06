@@ -75,7 +75,7 @@ import { KnexModule } from '@quazex/nestjs-knex';
 @Module({
     imports: [
         KnexModule.forRootAsync({
-            useFactory: async (config) => ({
+            useFactory: async(config: SomeConfigProvider) => ({
                 client: 'pg',
                 connection: {
                     host: config.PG_HOST,
@@ -86,7 +86,7 @@ import { KnexModule } from '@quazex/nestjs-knex';
                 },
             }),
             inject: [
-                ConfigProvider,
+                SomeConfigProvider,
             ],
         }),
     ],
@@ -100,7 +100,12 @@ By default, this module doesn't manage client connection on application bootstra
 
 ```typescript
 // main.ts
+const app = await NestFactory.create(AppModule);
+
+// Starts listening for shutdown hooks
 app.enableShutdownHooks(); // <<<
+
+await app.listen(process.env.PORT ?? 3000);
 ```
 
 ```typescript
