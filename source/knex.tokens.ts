@@ -1,9 +1,4 @@
-export class KnexTokens {
-    public static getOptions(): string {
-        return String('knex_module_options');
-    }
-
-    public static getClient(): string {
-        return String('knex_module_client');
-    }
+export enum KnexTokens {
+  OPTIONS = 'knex_module_options',
+  CLIENT = 'knex_module_client',
 }
